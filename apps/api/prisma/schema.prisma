@@ -1,0 +1,13 @@
+// DayCraft database schema: the source of truth for tables and columns.
+// Concepts and rules (spaces, membership, per-user planning) are documented in docs/DATA_MODEL.md (Phase 6).
+// The first real models arrive in Phase 6 (authentication + workspace foundation).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}

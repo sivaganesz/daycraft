@@ -8,11 +8,12 @@
 
 ## Current status
 
-| | |
-|---|---|
-| **Current phase** | **Phase 1: Local foundation**, approved 2026-10-16, in progress |
-| **Repository** | https://github.com/sivaganesz/daycraft (public; empty). Not yet initialized locally. **Nothing committed yet.** |
-| **Live environment** | None yet |
+|                      |                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------ |
+| **Current phase**    | **Phase 1: Local foundation**, approved 2026-10-16. All code done; commit, push, and PR remain   |
+| **Repository**       | https://github.com/sivaganesz/daycraft (public). `master` has the Phase 0 docs (bootstrap, D-24) |
+| **Working branch**   | `chore/phase-1-foundation` (not yet committed or pushed)                                         |
+| **Live environment** | None yet (Phases 4–5)                                                                            |
 
 ---
 
@@ -20,97 +21,88 @@
 
 Every phase ends with: test locally → `pnpm verify` → commit → push → CI → PR merge → deploy → verify live. Git, CI/CD, and infrastructure steps need the owner's approval (AGENTS.md §4).
 
-| # | Phase | Status |
-|---|---|---|
-| 0 | Decisions & documentation | ✅ Done |
-| 1 | Local foundation (monorepo skeleton) | 🟡 In progress |
-| 2 | Containerization (API image, production Compose) | ⬜ |
-| 3 | CI for branches + branch protection | ⬜ |
-| 4 | Infrastructure: Oracle VM, Cloudflare Pages, DNS, HTTPS | ⬜ |
-| 5 | CD on `master`: walking skeleton live | ⬜ |
-| 6 | Authentication + workspace foundation → **"Hey, {name}!" live** | ⬜ |
-| 7 | App shell & design system | ⬜ |
-| 8 | Settings core | ⬜ |
-| 9 | Task model + Smart Daily Planner | ⬜ |
-| 10 | Deadline & Follow-up Tracker | ⬜ |
-| 11 | Focus-Based Task Manager | ⬜ |
-| 12 | Kanban | ⬜ |
-| 13 | Email (Resend) | ⬜ |
-| 14 | Teams & invitations | ⬜ |
-| 15 | Production hardening | ⬜ |
+| #   | Phase                                                           | Status            |
+| --- | --------------------------------------------------------------- | ----------------- |
+| 0   | Decisions & documentation                                       | ✅ Done           |
+| 1   | Local foundation (monorepo skeleton)                            | 🟡 Commit pending |
+| 2   | Containerization (API image, production Compose)                | ⬜                |
+| 3   | CI for branches + branch protection                             | ⬜                |
+| 4   | Infrastructure: Oracle VM, Cloudflare Pages, DNS, HTTPS         | ⬜                |
+| 5   | CD on `master`: walking skeleton live                           | ⬜                |
+| 6   | Authentication + workspace foundation → **"Hey, {name}!" live** | ⬜                |
+| 7   | App shell & design system                                       | ⬜                |
+| 8   | Settings core                                                   | ⬜                |
+| 9   | Task model + Smart Daily Planner                                | ⬜                |
+| 10  | Deadline & Follow-up Tracker                                    | ⬜                |
+| 11  | Focus-Based Task Manager                                        | ⬜                |
+| 12  | Kanban                                                          | ⬜                |
+| 13  | Email (Resend)                                                  | ⬜                |
+| 14  | Teams & invitations                                             | ⬜                |
+| 15  | Production hardening                                            | ⬜                |
 
 Phase details: [ARCHITECTURE.md](ARCHITECTURE.md) and the [original roadmap](archive/PROJECT_UNDERSTANDING.md) §8 and §12.11.
 
 ---
 
-## Current phase tasks: Phase 0
-
-- [x] Analyse the requirements and agree on all decisions (Q1–Q16, OT-1–OT-5)
-- [x] Move the original files to `docs/archive/` (unchanged)
-- [x] `docs/PRD.md`, approved by the owner
-- [x] `docs/ARCHITECTURE.md`, decisions D-01–D-22
-- [x] `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `docs/PROGRESS.md`, approved
-- [x] Owner shared the GitHub repository URL
-- [x] Owner approved the Phase 1 scope below, including the new tools
-
----
-
 ## Current phase: Phase 1, Local foundation (**approved 2026-10-16**)
-
-**Task status:** 1 ✅ prerequisites OK (Node.js 22 kept, owner decision D-23; Docker Desktop running) · 2 🟡 config files created; bootstrap commit to `master` approved as a one-time exception (D-24) · 3–11 ⬜
-
-> ⚠️ **One-time exception (D-24):** the bootstrap commit is the **only** direct push to `master`. All later changes go through branches and PRs.
 
 **Goal:** a clean monorepo that runs locally. The web page calls the API, the API reaches PostgreSQL in Docker, and every quality check runs with one command. No features yet.
 
-**Proposed tasks**
-1. **Check prerequisites** on the owner's Windows machine: Git, Node.js LTS, pnpm (via Corepack), Docker Desktop.
-2. **Initialize the repo** ⚠️ *needs approval*: `git init`, default branch `master`, connect to the GitHub remote. Add `.gitignore`, `.gitattributes` (LF line endings, important on Windows), and `.editorconfig`.
-3. **Workspace root:** `package.json`, `pnpm-workspace.yaml`, pinned Node version (`.nvmrc` + `engines`), and a shared strict `tsconfig`.
-4. **`packages/shared`:** Zod setup and the first shared schema (the health response).
-5. **`apps/api`:** NestJS app with `GET /api/v1/health` and `GET /api/v1/health/ready` (checks the database), environment validation with Zod, JSON logging with request IDs, and CORS for the local web origin.
-6. **Database:** `infra/compose/compose.dev.yml` with PostgreSQL (pinned version, named volume). Prisma is set up and connected. The first real tables come in Phase 6.
-7. **`apps/web`:** React + Vite + TypeScript + Tailwind. A "Hello from DayCraft" page showing the live API and database status.
-8. **Quality tooling:** ESLint, Prettier, TypeScript type check, Vitest (unit tests), an API integration test against PostgreSQL, and **`pnpm verify`** running all of them.
-9. **Git hooks:** format, lint, and secret scan before each commit; commit message check (Conventional Commits).
-10. **`.env.example`**, **`README.md`** (what DayCraft is, how to run it locally), and the commands section of `AGENTS.md` §9.
-11. **First commit and push** on a branch, then a PR ⚠️ *each step needs approval*.
+**Approved new tools:** `nestjs-zod`, `nestjs-pino`, `lefthook`, `commitlint`, `gitleaks`. Official companion packages added with them: `@nestjs/cli`, `@nestjs/testing`, `supertest`, `unplugin-swc` + `@swc/core` (needed for Vitest with NestJS decorators), `pino`, `pino-http`, `@prisma/adapter-pg`, and the ESLint React plugins.
 
-**New tools that need approval with this phase** (not in the ARCHITECTURE §4 list): `nestjs-zod`, `nestjs-pino`, a git-hook manager (`lefthook`, or `husky` + `lint-staged`), `commitlint`, and `gitleaks` (secret scanning).
+| #   | Task                                                                                   | Status                                                                    |
+| --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| 1   | Check prerequisites                                                                    | ✅ Node 22.22.3 (D-23), pnpm 12.9.1, Docker 29.7, Git 2.55                |
+| 2   | Initialize the repo + `.gitignore` / `.gitattributes` / `.editorconfig`                | ✅ Bootstrap commit `db675a6` on `master` (D-24)                          |
+| 3   | Workspace root (`package.json`, `pnpm-workspace.yaml`, `.nvmrc`, `tsconfig.base.json`) | ✅                                                                        |
+| 4   | `packages/shared` with the health schemas                                              | ✅                                                                        |
+| 5   | `apps/api`: health + readiness, env validation, JSON logs + request IDs, strict CORS   | ✅                                                                        |
+| 6   | PostgreSQL 18 in Docker Compose; Prisma 7.10.0 set up (no models yet)                  | ✅                                                                        |
+| 7   | `apps/web`: "Hello from DayCraft" with live API/database status                        | ✅                                                                        |
+| 8   | ESLint, Prettier, type check, Vitest, integration tests, `pnpm verify`                 | ✅ 18 tests passing                                                       |
+| 9   | Git hooks: format, lint, secret scan, commit message check                             | 🟡 Hooks installed; **the owner must install gitleaks** before committing |
+| 10  | `.env.example` files, `README.md`, AGENTS.md §9 commands                               | ✅                                                                        |
+| 11  | First commit and push on the branch, then a PR                                         | ⏸️ Awaiting owner approval                                                |
 
-**Exit criteria:** a fresh clone + README steps → `pnpm dev` shows "Hello from DayCraft" with the API and database both green; `pnpm verify` passes; the first commit is on a branch.
+**Verified (2026-10-16):** `pnpm verify` passes; `pnpm dev` serves the page; the API returns 200 with request IDs and strict CORS; readiness returns **503 "database: down"** when PostgreSQL is stopped and recovers automatically when it restarts.
+
+**Exit criteria:** a fresh clone + README steps → `pnpm dev` shows "Hello from DayCraft" with the API and database both green; `pnpm verify` passes; the first commit is on a branch with a PR open.
 
 ---
 
 ## Open questions
 
-| ID | Question | Needed by |
-|---|---|---|
-| PRD OQ-1 | Follow-ups: tasks marked "waiting", or a separate list | Phase 10 |
-| PRD OQ-2 | Accessibility (WCAG 2.2 AA) and browser support list | Phase 7 |
-| PRD OQ-3 | Account deletion / data export | Before public launch |
-| PRD OQ-4 | Expense currency details (INR/USD/EUR decided) | Expense phase |
-| PRD OQ-6 | Revisit the minimum password length (accepted risk) | Before public launch |
+| ID       | Question                                                                   | Needed by            |
+| -------- | -------------------------------------------------------------------------- | -------------------- |
+| PRD OQ-1 | Follow-ups: tasks marked "waiting", or a separate list                     | Phase 10             |
+| PRD OQ-2 | Accessibility (WCAG 2.2 AA) and browser support list                       | Phase 7              |
+| PRD OQ-3 | Account deletion / data export                                             | Before public launch |
+| PRD OQ-4 | Expense currency details (INR/USD/EUR decided)                             | Expense phase        |
+| PRD OQ-6 | Revisit the minimum password length (accepted risk)                        | Before public launch |
+| REPO-1   | Repository licence (public repo; with no licence, all rights are reserved) | Phase 3              |
 
 ## Known issues
-None yet.
+
+- Prisma prints an "update available 8.0.0-rc" banner during builds. It's harmless (it's a release candidate); we stay on 7.10 (D-25).
 
 ---
 
 ## Handoff
 
-| | |
-|---|---|
-| **Last session** | 2026-10-15 · Claude (Claude Code) |
-| **Done** | All Phase 0 decisions; PRD, ARCHITECTURE, SECURITY, AGENTS, CLAUDE, and PROGRESS written |
-| **In progress** | Owner review of SECURITY.md, AGENTS.md, PROGRESS.md |
-| **Next step** | Owner reviews the docs, shares the repo URL, and approves Phase 1. Then start Phase 1 task 1 |
-| **Branch** | None (git not initialized yet) |
-| **Blockers** | None |
+|                  |                                                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| **Last session** | 2026-10-16 · Claude (Claude Code)                                                                         |
+| **Done**         | Phase 1 tasks 1–10 (task 9 needs gitleaks installed)                                                      |
+| **In progress**  | Task 11: commit + push + PR, awaiting owner approval                                                      |
+| **Next step**    | Owner installs gitleaks → approves the commit/push/PR → owner reviews and merges the PR → propose Phase 2 |
+| **Branch**       | `chore/phase-1-foundation`                                                                                |
+| **Blockers**     | gitleaks not installed (the pre-commit hook will refuse to commit without it)                             |
 
 ---
 
 ## Session log
-| Date | Agent | Summary |
-|---|---|---|
-| 2026-10-15 | Claude | Requirements analysis, interactive decisions Q1–Q16 and OT-1–OT-5, wrote all Phase 0 docs |
+
+| Date       | Agent  | Summary                                                                                                                                  |
+| ---------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-15 | Claude | Requirements analysis, interactive decisions Q1–Q16 and OT-1–OT-5, wrote all Phase 0 docs                                                |
+| 2026-10-16 | Claude | Bootstrap commit to `master`; Phase 1 monorepo (shared, API, web, Postgres, tooling, hooks); version decisions D-23–D-25; verify passing |
