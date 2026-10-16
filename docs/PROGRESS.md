@@ -8,12 +8,12 @@
 
 ## Current status
 
-|                      |                                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------ |
-| **Current phase**    | **Phase 1: Local foundation**, approved 2026-10-16. All code done; commit, push, and PR remain   |
-| **Repository**       | https://github.com/sivaganesz/daycraft (public). `master` has the Phase 0 docs (bootstrap, D-24) |
-| **Working branch**   | `chore/phase-1-foundation` (not yet committed or pushed)                                         |
-| **Live environment** | None yet (Phases 4–5)                                                                            |
+|                      |                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| **Current phase**    | **Phase 2: Containerization**, approved 2026-10-16, in progress                         |
+| **Repository**       | https://github.com/sivaganesz/daycraft (public). `master` at `58edce4` (Phase 1, PR #1) |
+| **Working branch**   | `chore/phase-2-containerization`                                                        |
+| **Live environment** | None yet (Phases 4–5)                                                                   |
 
 ---
 
@@ -21,52 +21,55 @@
 
 Every phase ends with: test locally → `pnpm verify` → commit → push → CI → PR merge → deploy → verify live. Git, CI/CD, and infrastructure steps need the owner's approval (AGENTS.md §4).
 
-| #   | Phase                                                           | Status            |
-| --- | --------------------------------------------------------------- | ----------------- |
-| 0   | Decisions & documentation                                       | ✅ Done           |
-| 1   | Local foundation (monorepo skeleton)                            | 🟡 Commit pending |
-| 2   | Containerization (API image, production Compose)                | ⬜                |
-| 3   | CI for branches + branch protection                             | ⬜                |
-| 4   | Infrastructure: Oracle VM, Cloudflare Pages, DNS, HTTPS         | ⬜                |
-| 5   | CD on `master`: walking skeleton live                           | ⬜                |
-| 6   | Authentication + workspace foundation → **"Hey, {name}!" live** | ⬜                |
-| 7   | App shell & design system                                       | ⬜                |
-| 8   | Settings core                                                   | ⬜                |
-| 9   | Task model + Smart Daily Planner                                | ⬜                |
-| 10  | Deadline & Follow-up Tracker                                    | ⬜                |
-| 11  | Focus-Based Task Manager                                        | ⬜                |
-| 12  | Kanban                                                          | ⬜                |
-| 13  | Email (Resend)                                                  | ⬜                |
-| 14  | Teams & invitations                                             | ⬜                |
-| 15  | Production hardening                                            | ⬜                |
+| #   | Phase                                                           | Status          |
+| --- | --------------------------------------------------------------- | --------------- |
+| 0   | Decisions & documentation                                       | ✅ Done         |
+| 1   | Local foundation (monorepo skeleton)                            | ✅ Done (PR #1) |
+| 2   | Containerization (API image, production Compose)                | 🟡 In progress  |
+| 3   | CI for branches + branch protection                             | ⬜              |
+| 4   | Infrastructure: Oracle VM, Cloudflare Pages, DNS, HTTPS         | ⬜              |
+| 5   | CD on `master`: walking skeleton live                           | ⬜              |
+| 6   | Authentication + workspace foundation → **"Hey, {name}!" live** | ⬜              |
+| 7   | App shell & design system                                       | ⬜              |
+| 8   | Settings core                                                   | ⬜              |
+| 9   | Task model + Smart Daily Planner                                | ⬜              |
+| 10  | Deadline & Follow-up Tracker                                    | ⬜              |
+| 11  | Focus-Based Task Manager                                        | ⬜              |
+| 12  | Kanban                                                          | ⬜              |
+| 13  | Email (Resend)                                                  | ⬜              |
+| 14  | Teams & invitations                                             | ⬜              |
+| 15  | Production hardening                                            | ⬜              |
 
 Phase details: [ARCHITECTURE.md](ARCHITECTURE.md) and the [original roadmap](archive/PROJECT_UNDERSTANDING.md) §8 and §12.11.
 
 ---
 
-## Current phase: Phase 1, Local foundation (**approved 2026-10-16**)
+## Current phase: Phase 2, Containerization (**approved 2026-10-16**)
 
-**Goal:** a clean monorepo that runs locally. The web page calls the API, the API reaches PostgreSQL in Docker, and every quality check runs with one command. No features yet.
+**Goal:** package the API as a production Docker image and run the full production stack (Caddy → API → PostgreSQL) **locally**, exactly as it will later run on the Oracle VM. Nothing is deployed.
 
-**Approved new tools:** `nestjs-zod`, `nestjs-pino`, `lefthook`, `commitlint`, `gitleaks`. Official companion packages added with them: `@nestjs/cli`, `@nestjs/testing`, `supertest`, `unplugin-swc` + `@swc/core` (needed for Vitest with NestJS decorators), `pino`, `pino-http`, `@prisma/adapter-pg`, and the ESLint React plugins.
+**New tools:** none. Caddy (D-09) and hadolint (D-06) are already approved. Pinned images: `node:22.23.3-alpine`, `caddy:2.11.7-alpine`, `postgres:18.6-alpine`, `hadolint/hadolint` (run through Docker).
+**Out of scope:** CI/CD, VPS, DNS, and external services.
 
-| #   | Task                                                                                   | Status                                                                    |
-| --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 1   | Check prerequisites                                                                    | ✅ Node 22.22.3 (D-23), pnpm 12.9.1, Docker 29.7, Git 2.55                |
-| 2   | Initialize the repo + `.gitignore` / `.gitattributes` / `.editorconfig`                | ✅ Bootstrap commit `db675a6` on `master` (D-24)                          |
-| 3   | Workspace root (`package.json`, `pnpm-workspace.yaml`, `.nvmrc`, `tsconfig.base.json`) | ✅                                                                        |
-| 4   | `packages/shared` with the health schemas                                              | ✅                                                                        |
-| 5   | `apps/api`: health + readiness, env validation, JSON logs + request IDs, strict CORS   | ✅                                                                        |
-| 6   | PostgreSQL 18 in Docker Compose; Prisma 7.10.0 set up (no models yet)                  | ✅                                                                        |
-| 7   | `apps/web`: "Hello from DayCraft" with live API/database status                        | ✅                                                                        |
-| 8   | ESLint, Prettier, type check, Vitest, integration tests, `pnpm verify`                 | ✅ 18 tests passing                                                       |
-| 9   | Git hooks: format, lint, secret scan, commit message check                             | 🟡 Hooks installed; **the owner must install gitleaks** before committing |
-| 10  | `.env.example` files, `README.md`, AGENTS.md §9 commands                               | ✅                                                                        |
-| 11  | First commit and push on the branch, then a PR                                         | ⏸️ Awaiting owner approval                                                |
+| #   | Task                                                                                                                                                    | Status                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| 1   | Sync `master`, delete the merged Phase 1 branch, create `chore/phase-2-containerization`                                                                | ✅                                         |
+| 2   | Update `PROGRESS.md` for Phase 2                                                                                                                        | ✅                                         |
+| 3   | API `Dockerfile`, multi-stage: build → small non-root **runtime** image + separate **migrate** target (Prisma CLI); architecture-neutral (amd64/arm64)  | ✅ runtime 387 MB · migrate 579 MB (D-26)  |
+| 4   | `.dockerignore` (no `node_modules`, `.env`, `.git` in images)                                                                                           | ✅                                         |
+| 5   | `infra/compose/compose.prod.yml`: Caddy + API + PostgreSQL; private network; only Caddy publishes 80/443; health checks; restart; log rotation; volumes | ✅ plus `internal` data network, hardening |
+| 6   | `infra/caddy/Caddyfile`: API host, apex redirect, security headers; hostnames from env (local: `api.localhost`)                                         | ✅                                         |
+| 7   | `infra/compose/.env.prod.example` (variable names + placeholders only)                                                                                  | ✅ (`.gitignore` fixed so it's tracked)    |
+| 8   | Run and test the production stack locally (HTTPS via Caddy, DB not reachable, non-root, image size, headers)                                            | ✅ see "Verified" below                    |
+| 9   | hadolint the Dockerfile                                                                                                                                 | ✅ clean (numeric UIDs, D-27)              |
+| 10  | Docs: ARCHITECTURE (image details), README ("production stack locally"), PROGRESS                                                                       | ✅                                         |
+| 11  | Commit, push, PR                                                                                                                                        | ⏸️ Needs owner approval                    |
 
-**Verified (2026-10-16):** `pnpm verify` passes; `pnpm dev` serves the page; the API returns 200 with request IDs and strict CORS; readiness returns **503 "database: down"** when PostgreSQL is stopped and recovers automatically when it restarts.
+**Verified locally (2026-10-16):** migrations job runs (no migrations yet); `https://api.localhost/api/v1/health/ready` → 200 through Caddy, with the **certificate chain verified** against Caddy's local root; HSTS, nosniff, Referrer-Policy, and X-Frame-Options present; `Server` and `X-Powered-By` hidden; HTTP → HTTPS (308); bare domain → app (301); the database has **no published port**, **Caddy cannot reach it**, and it has **no internet access**; the API runs as UID 1000 with a read-only filesystem and **zero capabilities**; a crash of the Node.js process inside the container **recovers automatically in about 2 s**.
 
-**Exit criteria:** a fresh clone + README steps → `pnpm dev` shows "Hello from DayCraft" with the API and database both green; `pnpm verify` passes; the first commit is on a branch with a PR open.
+**Also changed:** each package now declares its own `typescript` / `@types/node` (needed for slim Docker installs); a pnpm **catalog** pins Prisma once; `prisma.config.ts` is self-contained; `.nvmrc` → 22.23.3 to match the image (D-27). The owner's local 22.22.3 still meets `engines`.
+
+**Exit criteria:** `docker compose -f infra/compose/compose.prod.yml up` gives a healthy Caddy + API + DB stack over HTTPS on the owner's machine; the database is not reachable from outside the Docker network; hadolint is clean; `pnpm verify` still passes; the PR is open.
 
 ---
 
@@ -84,19 +87,20 @@ Phase details: [ARCHITECTURE.md](ARCHITECTURE.md) and the [original roadmap](arc
 ## Known issues
 
 - Prisma prints an "update available 8.0.0-rc" banner during builds. It's harmless (it's a release candidate); we stay on 7.10 (D-25).
+- The owner's terminals need a VS Code restart to find gitleaks (installed 2026-10-16 via winget).
 
 ---
 
 ## Handoff
 
-|                  |                                                                                                           |
-| ---------------- | --------------------------------------------------------------------------------------------------------- |
-| **Last session** | 2026-10-16 · Claude (Claude Code)                                                                         |
-| **Done**         | Phase 1 tasks 1–10 (task 9 needs gitleaks installed)                                                      |
-| **In progress**  | Task 11: commit + push + PR, awaiting owner approval                                                      |
-| **Next step**    | Owner installs gitleaks → approves the commit/push/PR → owner reviews and merges the PR → propose Phase 2 |
-| **Branch**       | `chore/phase-1-foundation`                                                                                |
-| **Blockers**     | gitleaks not installed (the pre-commit hook will refuse to commit without it)                             |
+|                  |                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| **Last session** | 2026-10-16 · Claude (Claude Code)                                                   |
+| **Done**         | Phase 1 merged (PR #1, `58edce4`) and verified by a fresh clone; Phase 2 tasks 1–10 |
+| **In progress**  | Phase 2 task 11 (commit, push, PR): awaiting owner approval                         |
+| **Next step**    | Owner approves → commit + push → owner opens and merges the PR → propose Phase 3    |
+| **Branch**       | `chore/phase-2-containerization`                                                    |
+| **Blockers**     | None                                                                                |
 
 ---
 
@@ -106,3 +110,4 @@ Phase details: [ARCHITECTURE.md](ARCHITECTURE.md) and the [original roadmap](arc
 | ---------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-10-15 | Claude | Requirements analysis, interactive decisions Q1–Q16 and OT-1–OT-5, wrote all Phase 0 docs                                                |
 | 2026-10-16 | Claude | Bootstrap commit to `master`; Phase 1 monorepo (shared, API, web, Postgres, tooling, hooks); version decisions D-23–D-25; verify passing |
+| 2026-10-16 | Claude | Phase 1 merged (PR #1) and verified via a fresh clone; Phase 2 started                                                                   |

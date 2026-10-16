@@ -71,6 +71,34 @@ Then open **http://localhost:5173**. You should see **"Hello from DayCraft"** wi
 | `pnpm db:up`   | Start the local PostgreSQL                                                            |
 | `pnpm db:down` | Stop it (your data is kept in a Docker volume)                                        |
 
+## Run the production stack locally
+
+The same images and Compose file run on the production server: Caddy (HTTPS) → API → PostgreSQL.
+Locally, Caddy serves **https://api.localhost** with a certificate from its own local authority.
+
+```bash
+# 1. Build the images (from the repository root)
+docker build -f apps/api/Dockerfile -t daycraft-api:local .
+docker build -f apps/api/Dockerfile --target migrate -t daycraft-api-migrate:local .
+
+# 2. Settings: copy the example, then set POSTGRES_PASSWORD (e.g. `openssl rand -hex 24`)
+cp infra/compose/.env.prod.example infra/compose/.env.prod
+
+# 3. Start: database → migrations → API + Caddy
+C="docker compose -f infra/compose/compose.prod.yml --env-file infra/compose/.env.prod"
+$C up -d --wait postgres
+$C --profile migrate run --rm migrate
+$C up -d --wait
+
+# 4. Check it (-k skips trusting Caddy's local certificate authority; fine for a local test only)
+curl -k https://api.localhost/api/v1/health/ready
+
+# 5. Stop (data volumes are kept)
+$C down
+```
+
+Ports 80 and 443 must be free on your machine. In this stack, the database and API are **not** reachable from your machine; only Caddy is.
+
 ## Contributing
 
 - `master` is production and changes **only through pull requests** that pass CI.
