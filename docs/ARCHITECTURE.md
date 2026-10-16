@@ -232,8 +232,17 @@ Full rules: [SECURITY.md](../SECURITY.md).
 
 ### 11.2 Pipeline A: non-`master` pushes and PRs (`ci.yml`)
 
-Install (cached) → lint + format check → type check → unit tests → API integration tests (temporary PostgreSQL) → build web and API → **hadolint**.
+✅ **Implemented (Phase 3).** `ci.yml` calls the reusable **`verify.yml`**, which runs three parallel jobs:
+
+| Job (required check) | What it does                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `checks / verify`    | Node from `.nvmrc` → pnpm from `packageManager` → cached frozen install → `pnpm verify` against a PostgreSQL 18.6 service |
+| `checks / hadolint`  | Lints `apps/api/Dockerfile` (hadolint v2.15.1 image)                                                                      |
+| `checks / gitleaks`  | Scans the **full git history** for secrets (gitleaks v8.30.1 image)                                                       |
+
 ✅ **No Docker image builds. No deployments.**
+**Supply chain (D-29):** third-party actions are pinned to full commit SHAs; tools run from version-pinned official images; the workflow token is read-only (`contents: read`); checkout doesn't keep credentials; no `pull_request_target`, so PRs from forks never get secrets. A newer push cancels the outdated run.
+**Triggers:** both `push` (non-`master`) and `pull_request` (into `master`). A push to a branch with an open PR runs both: the push run checks the branch, and the PR run checks the result of merging it into `master`. That's a small, deliberate duplication; Actions is free for public repos.
 
 ### 11.3 Pipeline B: `master` (`deploy.yml`)
 
@@ -302,6 +311,7 @@ Each entry records **what** was decided, **why**, and the main **alternative** r
 | D-26 | **Two API images** from one Dockerfile: `runtime` (production dependencies only, about 387 MB) and a minimal `migrate` image (Prisma CLI only, about 579 MB). The migrate image is built from `infra/migrate`, and the Prisma version is defined once in the **pnpm catalog** | Migrations run as a one-off job before the new API starts. Reusing the build stage produced a 1.98 GB image; the catalog keeps the CLI and client versions identical                                                                            | Migrations from the build stage; the Prisma CLI inside the runtime image       |
 | D-27 | **Pinned image versions** and **numeric UIDs** (`USER 1000:1000`). `.nvmrc` follows the image's Node.js version                                                                                                                                                               | Reproducible builds and deliberate upgrades; numeric UIDs let platforms verify non-root (hadolint DL3066); CI matches production                                                                                                                | Floating tags (`node:22-alpine`)                                               |
 | D-28 | Docker builds remove the root `prepare` script (`npm pkg delete scripts.prepare`)                                                                                                                                                                                             | It installs developer git hooks, which need git; images have neither git nor hooks                                                                                                                                                              | Ignoring all install scripts (would also skip Prisma's engine download)        |
+| D-29 | CI supply-chain hardening: actions pinned to commit SHAs, tools via pinned official images (no extra third-party actions), read-only token, `persist-credentials: false`, no `pull_request_target`                                                                            | A moved tag or a compromised action is a common pipeline attack; fewer third parties means less risk                                                                                                                                            | Version tags (`@v7`), third-party hadolint/gitleaks actions                    |
 | D-21 | Sessions expire after 7 days of inactivity, 30 days maximum (OT-1) · UptimeRobot (OT-3) · Mailpit for local email (OT-4) · versions pinned at Phase 1 (OT-5)                                                                                                                  | Owner accepted the defaults                                                                                                                                                                                                                     | —                                                                              |
 
 ---

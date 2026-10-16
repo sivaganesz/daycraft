@@ -1,0 +1,106 @@
+# Reusable validation workflow: the single definition of "the checks".
+# Called by ci.yml (branches and PRs) now, and by the deploy workflow on master in Phase 5,
+# so production can never be deployed with weaker checks than a PR gets.
+#
+# Supply-chain rules (SECURITY.md §2.9):
+#   - Third-party actions are pinned to a full commit SHA (a tag can be moved; a SHA cannot).
+#   - Tools (hadolint, gitleaks) run from their official images, pinned to a version.
+#   - The token is read-only.
+name: Verify
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Temporary PostgreSQL for the API integration tests. Same version as production.
+    # Credentials are throwaway values, identical to apps/api/.env.example.
+    services:
+      postgres:
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_USER: daycraft
+          POSTGRES_PASSWORD: daycraft
+          POSTGRES_DB: daycraft
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U daycraft -d daycraft"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js (version from .nvmrc)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install pnpm (version from package.json "packageManager")
+        run: npm install --global "pnpm@$(node -p "require('./package.json').packageManager.split('@')[1]")"
+
+      - name: Find the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache downloaded packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
+
+      - name: Install dependencies (exactly as locked)
+        run: pnpm install --frozen-lockfile
+
+      - name: Use the example environment files (no secrets needed)
+        run: |
+          cp apps/api/.env.example apps/api/.env
+          cp apps/web/.env.example apps/web/.env
+
+      - name: Run all checks (format, build, lint, type check, tests)
+        run: pnpm verify
+
+  hadolint:
+    name: hadolint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Lints the Dockerfile without building any image (D-06).
+      - name: Lint the API Dockerfile
+        run: docker run --rm -i hadolint/hadolint:v2.15.1-alpine hadolint - < apps/api/Dockerfile
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the code (full history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Second safety net after the local pre-commit hook: scans the whole git history.
+      - name: Scan for committed secrets
+        run: >-
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo"
+          ghcr.io/gitleaks/gitleaks:v8.30.1
+          git /repo --redact --no-banner --verbose
