@@ -59,7 +59,7 @@ Phase details: [ARCHITECTURE.md](ARCHITECTURE.md) and the [original roadmap](arc
 | 4   | PR template with the AGENTS.md definition-of-done checklist                                                                                          | ✅                                                    |
 | 5   | Protect `master` with a GitHub ruleset (PR required, CI checks required, no direct/force pushes or deletion; 0 reviewers)                            | ⬜ owner, after CI's first run                        |
 | 6   | GitHub security features: secret scanning + push protection, private vulnerability reporting, Dependabot alerts                                      | ⬜ owner                                              |
-| 7   | Decide REPO-1 (licence)                                                                                                                              | ⬜ owner decision                                     |
+| 7   | Decide REPO-1 (licence)                                                                                                                              | ✅ all rights reserved (D-30)                         |
 | 8   | Optional: a deliberately failing PR on a throwaway branch proves merging is blocked                                                                  | ⬜ owner to decide                                    |
 | 9   | Docs: ARCHITECTURE §11 status (D-29), PROGRESS. README badge moved to Phase 5 (this CI never runs on `master`)                                       | ✅                                                    |
 | 10  | Commit, push, PR (the first PR checked by CI)                                                                                                        | ⏸️ Needs owner approval                               |
@@ -70,14 +70,13 @@ Phase details: [ARCHITECTURE.md](ARCHITECTURE.md) and the [original roadmap](arc
 
 ## Open questions
 
-| ID       | Question                                                                   | Needed by            |
-| -------- | -------------------------------------------------------------------------- | -------------------- |
-| PRD OQ-1 | Follow-ups: tasks marked "waiting", or a separate list                     | Phase 10             |
-| PRD OQ-2 | Accessibility (WCAG 2.2 AA) and browser support list                       | Phase 7              |
-| PRD OQ-3 | Account deletion / data export                                             | Before public launch |
-| PRD OQ-4 | Expense currency details (INR/USD/EUR decided)                             | Expense phase        |
-| PRD OQ-6 | Revisit the minimum password length (accepted risk)                        | Before public launch |
-| REPO-1   | Repository licence (public repo; with no licence, all rights are reserved) | Phase 3 (now)        |
+| ID       | Question                                               | Needed by            |
+| -------- | ------------------------------------------------------ | -------------------- |
+| PRD OQ-1 | Follow-ups: tasks marked "waiting", or a separate list | Phase 10             |
+| PRD OQ-2 | Accessibility (WCAG 2.2 AA) and browser support list   | Phase 7              |
+| PRD OQ-3 | Account deletion / data export                         | Before public launch |
+| PRD OQ-4 | Expense currency details (INR/USD/EUR decided)         | Expense phase        |
+| PRD OQ-6 | Revisit the minimum password length (accepted risk)    | Before public launch |
 
 ## Known issues
 
