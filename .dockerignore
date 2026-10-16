@@ -1,0 +1,26 @@
+# Keep the Docker build context small and free of secrets.
+# Anything listed here is never sent to the Docker build, so it can never end up in an image.
+
+# Secrets and local configuration
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+
+# Dependencies and build output (rebuilt inside the image)
+**/node_modules
+**/dist
+**/coverage
+apps/api/src/generated
+
+# Not needed to build the API
+.git
+.github
+.claude
+docs
+infra/*
+!infra/migrate
+apps/web
+**/*.log
+**/*.md

@@ -1,0 +1,9 @@
+{
+  "name": "@daycraft/migrate",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dependencies of the database migration image only (Prisma CLI). The schema and migrations live in apps/api/prisma.",
+  "dependencies": {
+    "prisma": "catalog:"
+  }
+}

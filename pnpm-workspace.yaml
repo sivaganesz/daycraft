@@ -1,6 +1,14 @@
 packages:
   - apps/*
   - packages/*
+  - infra/migrate
+
+# Versions shared by several packages, defined ONCE. Packages refer to them as "catalog:".
+# Prisma's CLI (migrations) and client (API) must always be the same version.
+catalog:
+  prisma: 7.10.0
+  '@prisma/client': 7.10.0
+  '@prisma/adapter-pg': 7.10.0
 
 # Supply-chain safety: dependencies may NOT run install scripts unless listed here.
 # Only add a package after checking why it needs one (usually to download a native binary).

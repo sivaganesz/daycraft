@@ -1,0 +1,42 @@
+# DayCraft reverse proxy (Caddy). The ONLY container that faces the internet.
+#
+# Hostnames come from environment variables (set in compose.prod.yml / the server's .env):
+#   API_HOST   production: daycraft-api.whitraworks.online   local: api.localhost
+#   APEX_HOST  production: whitraworks.online                local: localhost
+#   APP_URL    production: https://daycraft.whitraworks.online  local: http://localhost:5173
+#
+# HTTPS is automatic: real hostnames get Let's Encrypt certificates (renewed automatically);
+# *.localhost names get certificates from Caddy's own local authority, for testing.
+
+# ----- The API -----
+{$API_HOST} {
+	encode zstd gzip
+
+	header {
+		# Browsers must use HTTPS for this host for a year (SECURITY.md §2.7).
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		# Don't advertise the server software.
+		-Server
+	}
+
+	# Reject oversized requests before they reach the API (logo uploads are 2 MB at most).
+	request_body {
+		max_size 5MB
+	}
+
+	reverse_proxy api:3000
+
+	# Access logs as JSON. Caddy redacts Cookie and Authorization headers by default.
+	log {
+		output stdout
+		format json
+	}
+}
+
+# ----- The bare domain: send visitors to the app (for now) -----
+{$APEX_HOST} {
+	redir {$APP_URL}{uri} permanent
+}
