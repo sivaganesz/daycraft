@@ -1,0 +1,21 @@
+# Git hooks, installed automatically by `pnpm install` (the root "prepare" script).
+# They run for every contributor and every AI agent. Never bypass them with --no-verify.
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: '*.{js,mjs,cjs,ts,tsx,json,md,yml,yaml,css,html}'
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+    lint:
+      glob: '*.{js,mjs,cjs,ts,tsx}'
+      run: pnpm exec eslint {staged_files}
+    secrets:
+      # Requires the gitleaks program (see README). Blocks the commit if a secret is found.
+      run: gitleaks git --pre-commit --staged --redact --no-banner
+
+commit-msg:
+  commands:
+    conventional-commit:
+      run: pnpm exec commitlint --edit {1}

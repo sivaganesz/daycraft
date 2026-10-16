@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Supply-chain safety: dependencies may NOT run install scripts unless listed here.
+# Only add a package after checking why it needs one (usually to download a native binary).
+allowBuilds:
+  lefthook: true # installs the git hooks
+  prisma: true # Prisma CLI engines
+  '@prisma/engines': true # Prisma schema/migration engine binary
+  '@swc/core': true # native SWC compiler binary (used by the API tests)

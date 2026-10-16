@@ -7,6 +7,9 @@ dist/
 build/
 *.tsbuildinfo
 
+# Generated code (rebuilt by `prisma generate` on every build)
+apps/api/src/generated/
+
 # Environment and secrets: NEVER commit real values (see SECURITY.md §2.5)
 .env
 .env.*

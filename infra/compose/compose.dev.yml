@@ -1,0 +1,24 @@
+# Local development services. Start with `pnpm db:up`, stop with `pnpm db:down`.
+# The credentials below are for LOCAL DEVELOPMENT ONLY. Production uses secrets from the server's .env.
+name: daycraft-dev
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: daycraft
+      POSTGRES_PASSWORD: daycraft
+      POSTGRES_DB: daycraft
+    ports:
+      # Bound to 127.0.0.1 so the database is reachable only from this machine.
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U daycraft -d daycraft']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
