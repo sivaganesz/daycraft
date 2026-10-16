@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment and secrets: NEVER commit real values (see SECURITY.md §2.5)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Backups and database dumps (contain personal data)
+*.sql
+*.sql.gz
+*.dump
+backups/
+
+# Tests and coverage
+coverage/
+playwright-report/
+test-results/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors (shared settings may be added deliberately later)
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local AI-tool settings (personal; shared rules live in AGENTS.md)
+.claude/settings.local.json
