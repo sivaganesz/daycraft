@@ -108,3 +108,7 @@ Ports 80 and 443 must be free on your machine. In this stack, the database and A
 ## Security
 
 Please report vulnerabilities privately. See [SECURITY.md](SECURITY.md).
+
+## License
+
+© 2026 Whitraworks. **All rights reserved.** The source is publicly visible for portfolio and learning purposes; it is not open source. See [LICENSE](LICENSE).

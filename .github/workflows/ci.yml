@@ -1,0 +1,25 @@
+# CI for branches and pull requests (requirement §6A, D-06).
+#   - Runs on every push to any branch EXCEPT master, and on every PR into master.
+#   - Only validates: no Docker image builds, no deployments.
+# Pushes to master are handled by the deploy workflow (Phase 5).
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the outdated run.
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    uses: ./.github/workflows/verify.yml
